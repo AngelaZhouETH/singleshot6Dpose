@@ -295,8 +295,8 @@ if __name__ == "__main__":
     meshname      = data_options['mesh']
     num_workers   = int(data_options['num_workers'])
     backupdir     = data_options['backup']
-    diam          = float(data_options['diam'])
-    vx_threshold  = diam * 0.1
+    # diam          = float(data_options['diam'])
+    # vx_threshold  = diam * 0.1
     if not os.path.exists(backupdir):
         makedirs(backupdir)
     batch_size    = int(net_options['batch'])
@@ -363,6 +363,8 @@ if __name__ == "__main__":
     vertices             = np.c_[np.array(mesh.vertices), np.ones((len(mesh.vertices), 1))].transpose()
     corners3D            = get_3D_corners(vertices)
     internal_calibration = get_camera_intrinsic()
+    diam          = calc_pts_diameter(np.array(mesh.vertices))
+    vx_threshold  = diam * 0.1
 
     # Specify the number of workers
     kwargs = {'num_workers': num_workers, 'pin_memory': True} if use_cuda else {}

@@ -78,8 +78,8 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     mesh          = MeshPly(meshname)
     vertices      = np.c_[np.array(mesh.vertices), np.ones((len(mesh.vertices), 1))].transpose()
     corners3D     = get_3D_corners(vertices)
-    # diam          = calc_pts_diameter(np.array(mesh.vertices))
-    diam          = float(options['diam'])
+    diam          = calc_pts_diameter(np.array(mesh.vertices))
+    # diam          = float(options['diam'])
 
     # Read intrinsic camera parameters
     internal_calibration = get_camera_intrinsic()

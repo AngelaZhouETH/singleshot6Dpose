@@ -1,0 +1,5 @@
+train = ../sixd_toolkit/output/render/sofa/leather_2_5/train.txt
+valid = ../sixd_toolkit/output/render/sofa/leather_2_5/test.txt
+backup = backup/sofa
+mesh = ../sixd_toolkit/data/zhoum/sofa.ply
+name = sofa
