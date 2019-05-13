@@ -53,6 +53,8 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     conf_thresh     = 0.1
     nms_thresh      = 0.4
     match_thresh    = 0.5
+    acc_idx_err = 0
+    acc_idx_total = 0
     if save:
         makedirs(backupdir + '/test')
         makedirs(backupdir + '/test/gt')
@@ -112,7 +114,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     logging("   Number of test samples: %d" % len(test_loader.dataset))
     # Iterate through test batches (Batch size for test data is 1)
     count = 0
-    z = np.zeros((3, 1))
+    
     for batch_idx, (data, target) in enumerate(test_loader):
         
         t1 = time.time()
@@ -168,6 +170,19 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                 corners2D_pr[:, 1] = corners2D_pr[:, 1] * 480
                 preds_corners2D.append(corners2D_pr)
                 gts_corners2D.append(corners2D_gt)
+
+                idx_err_count = 0
+                for i in range(0,8):
+                    dist = np.linalg.norm(corners2D_gt[i] - corners2D_pr[i], axis=0)
+                    for j in range(0,8):
+                        if (i != j):
+                            dist_tmp = np.linalg.norm(corners2D_gt[i] - corners2D_pr[j], axis=0)
+                            if (dist_tmp < dist):
+                                idx_err_count+=1
+                                break
+                if idx_err_count > 6:
+                    acc_idx_err+=1
+                acc_idx_total+=1
 
                 # Compute corner prediction error
                 corner_norm = np.linalg.norm(corners2D_gt - corners2D_pr, axis=1)
@@ -251,6 +266,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     logging('   Acc using 5 cm 5 degree metric = {:.2f}%'.format(acc5cm5deg))
     logging("   Mean 2D pixel error is %f, Mean vertex error is %f, mean corner error is %f" % (mean_err_2d, np.mean(errs_3d), mean_corner_err_2d))
     logging('   Translation error: %f m, angle error: %f degree, pixel error: % f pix' % (testing_error_trans/nts, testing_error_angle/nts, testing_error_pixel/nts) )
+    print ("acc_idx_err/acc_idx_total: " + str(acc_idx_err) + "/" +  str(acc_idx_total))
 
     if save:
         predfile = backupdir + '/predictions_linemod_' + name +  '.mat'
