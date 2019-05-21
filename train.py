@@ -20,9 +20,11 @@ from cfg import parse_cfg
 from region_loss import RegionLoss
 from darknet import Darknet
 from MeshPly import MeshPly
+from logger import Logger
 
 import warnings
 warnings.filterwarnings("ignore")
+logger = Logger('./logs')
 
 # Create new directory
 def makedirs(path):
@@ -404,6 +406,9 @@ if __name__ == "__main__":
             if (epoch % 10 == 0) and (epoch is not 0): 
                 test(epoch, niter)
                 logging('save training stats to %s/costs.npz' % (backupdir))
+                # logger.scalar_summary(tag, value, step+1)
+                print (training_losses)
+                print ("mz test")
                 np.savez(os.path.join(backupdir, "costs.npz"),
                     training_iters=training_iters,
                     training_losses=training_losses,
