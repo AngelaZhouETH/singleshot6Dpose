@@ -293,7 +293,7 @@ if __name__ == "__main__":
     testlist      = data_options['valid']
     nsamples      = file_lines(trainlist)
     gpus          = data_options['gpus']  # e.g. 0,1,2,3
-    gpus 		  = '0'
+    # gpus 		  = '0'
     meshname      = data_options['mesh']
     num_workers   = int(data_options['num_workers'])
     backupdir     = data_options['backup']
@@ -391,8 +391,8 @@ if __name__ == "__main__":
             params += [{'params': [value], 'weight_decay': 0.0}]
         else:
             params += [{'params': [value], 'weight_decay': decay*batch_size}]
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate/batch_size, momentum=momentum, dampening=0, weight_decay=decay*batch_size)
-    # optimizer = optim.Adam(model.parameters(), lr=0.001) # Adam optimization
+    # optimizer = optim.SGD(model.parameters(), lr=learning_rate/batch_size, momentum=momentum, dampening=0, weight_decay=decay*batch_size)
+    optimizer = optim.Adam(model.parameters(), lr=0.001) # Adam optimization
 
     evaluate = False
     if evaluate:

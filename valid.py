@@ -31,6 +31,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     name         = options['name']
     if not os.path.exists(backupdir):
         makedirs(backupdir)
+    bg_file_names = get_all_files('VOCdevkit/VOC2012/JPEGImages')
 
     # Parameters
     prefix       = 'results'
@@ -102,7 +103,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     valid_dataset = dataset.listDataset(valid_images, shape=(test_width, test_height),
                        shuffle=False,
                        transform=transforms.Compose([
-                           transforms.ToTensor(),]))
+                           transforms.ToTensor(),]), bg_file_names=bg_file_names)
     valid_batchsize = 1
 
     # Specify the number of workers for multiple processing, get the dataloader for the test dataset
