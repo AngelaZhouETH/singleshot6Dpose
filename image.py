@@ -102,7 +102,6 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             y7 = bs[i][16]
             x8 = bs[i][17]
             y8 = bs[i][18]
-
             x0 = min(0.999, max(0, x0 * sx - dx)) 
             y0 = min(0.999, max(0, y0 * sy - dy)) 
             x1 = min(0.999, max(0, x1 * sx - dx)) 
@@ -140,7 +139,6 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             bs[i][16] = y7
             bs[i][17] = x8
             bs[i][18] = y8
-            
             label[cc] = bs[i]
             cc += 1
             if cc >= 50:
@@ -149,7 +147,7 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
     label = np.reshape(label, (-1))
     return label
 
-def change_background(img, bg, imgpath):
+def change_background(img, mask, bg, imgpath):
     # oh = img.height  
     # ow = img.width
     ow, oh = img.size
@@ -157,33 +155,31 @@ def change_background(img, bg, imgpath):
     
     imcs = list(img.split())
     bgcs = list(bg.split())
-    # maskcs = list(mask.split())
+    maskcs = list(mask.split())
     fics = list(Image.new(img.mode, img.size).split())
     
     mask = ImageMath.eval("a + b + c", a=imcs[0], b=imcs[1], c=imcs[2]).convert('L')
-    negmask = mask.point(lambda i: 1 - math.ceil(i / (3*255.0)))
-    posmask = mask.point(lambda i: math.ceil(i / (3*255.0)))
     for c in range(len(imcs)):
-        # negmask = maskcs[c].point(lambda i: 1 - i / 255)
-        # posmask = maskcs[c].point(lambda i: i / 255)
+        negmask = maskcs[c].point(lambda i: 1 - i / 255)
+        posmask = maskcs[c].point(lambda i: i / 255)
         fics[c] = ImageMath.eval("a * c + b * d", a=imcs[c], b=bgcs[c], c=posmask, d=negmask).convert('L')
     out = Image.merge(img.mode, tuple(fics))
 
     # if not os.path.exists("imgs/"):
-    #         os.mkdir("imgs/")
+    #      os.mkdir("imgs/")
     # out.save("imgs/"+imgpath[-8: -4]+"_thumbnail", "JPEG")
     return out
 
 def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure, bgpath):
     labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
-    # maskpath = imgpath.replace('JPEGImages', 'mask').replace('/00', '/').replace('.jpg', '.png')
+    maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg', '.png')
 
     ## data augmentation
     img = Image.open(imgpath).convert('RGB')
-    # mask = Image.open(maskpath).convert('RGB')
+    mask = Image.open(maskpath).convert('RGB')
     bg = Image.open(bgpath).convert('RGB')
     
-    img = change_background(img, bg, imgpath)
+    img = change_background(img, mask, bg, imgpath)
     img,flip,dx,dy,sx,sy = data_augmentation(img, shape, jitter, hue, saturation, exposure)
     ow, oh = img.size
     label = fill_truth_detection(labpath, ow, oh, flip, dx, dy, 1./sx, 1./sy)
