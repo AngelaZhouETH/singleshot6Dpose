@@ -41,7 +41,7 @@ def build_targets(pred_corners, target, anchors, num_anchors, num_classes, nH, n
         cur_pred_corners = pred_corners[b*nAnchors:(b+1)*nAnchors].t()
         cur_confs = torch.zeros(nAnchors)
         for t in range(50):
-            if target[b][t*21+1] == 0:
+            if t > 0 and target[b][t*21+1] == 0:
                 break
             gx0 = target[b][t*21+1]*nW
             gy0 = target[b][t*21+2]*nH
