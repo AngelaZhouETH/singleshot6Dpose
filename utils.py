@@ -29,10 +29,17 @@ def calcAngularDistance(gt_rot, pr_rot):
     trace = np.trace(rotDiff) 
     return np.rad2deg(np.arccos((trace-1.0)/2.0))
 
-def get_camera_intrinsic():
+def get_camera_intrinsic(is_ori=False):
     K = np.zeros((3, 3), dtype='float64')
-    K[0, 0], K[0, 2] = 572.4114, 325.2611
-    K[1, 1], K[1, 2] = 573.5704, 242.0489
+    # sixd camera intrinsic parameters
+    if is_ori:
+        K[0, 0], K[0, 2] = 572.4114, 325.2611
+        K[1, 1], K[1, 2] = 573.5704, 242.0489
+    # suncg camera intrinsic parameters
+    else:
+        f_suncg = 320.0/math.tan(0.9)
+        K[0, 0], K[0, 2] = f_suncg, 320.0
+        K[1, 1], K[1, 2] = f_suncg, 240.0
     K[2, 2] = 1.
     return K
 
@@ -91,19 +98,19 @@ def pnp(points_3D, points_2D, cameraMatrix):
 
     assert points_2D.shape[0] == points_2D.shape[0], 'points 3D and points 2D must have same number of vertices'
 
-    _, R_exp, t = cv2.solvePnP(points_3D,
-                              # points_2D,
-                              np.ascontiguousarray(points_2D[:,:2]).reshape((-1,1,2)),
-                              cameraMatrix,
-                              distCoeffs)
+    # _, R_exp, t = cv2.solvePnP(points_3D,
+    #                           # points_2D,
+    #                           np.ascontiguousarray(points_2D[:,:2]).reshape((-1,1,2)),
+    #                           cameraMatrix,
+    #                           distCoeffs)
                               # , None, None, False, cv2.SOLVEPNP_UPNP)
                                 
-    # R_exp, t, _ = cv2.solvePnPRansac(points_3D,
-    #                            points_2D,
-    #                            cameraMatrix,
-    #                            distCoeffs,
-    #                            reprojectionError=12.0)
-    # 
+    _, R_exp, t, _ = cv2.solvePnPRansac(points_3D,
+                               points_2D,
+                               cameraMatrix,
+                               distCoeffs,
+                               reprojectionError=12.0)
+    
 
     R, _ = cv2.Rodrigues(R_exp)
     # Rt = np.c_[R, t]
