@@ -12,6 +12,18 @@ import dataset
 from utils import *
 from MeshPly import MeshPly
 
+ORI = 0
+SUNCG = 1
+SCANNET = 2
+
+Data_type = SCANNET
+
+width = 640
+height = 480
+if Data_type == SCANNET:
+    width = 1296
+    height = 968
+
 # Create new directory
 def makedirs(path):
     if not os.path.exists( path ):
@@ -31,7 +43,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     name         = options['name']
     if not os.path.exists(backupdir):
         makedirs(backupdir)
-    bg_file_names = get_all_files('VOCdevkit/VOC2012/JPEGImages')
+    #bg_file_names = get_all_files('VOCdevkit/VOC2012/JPEGImages')
 
     # Parameters
     prefix       = 'results'
@@ -85,7 +97,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     # diam          = float(options['diam'])
 
     # Read intrinsic camera parameters
-    internal_calibration = get_camera_intrinsic()
+    internal_calibration = get_camera_intrinsic(Data_type)
 
     # Get validation file names
     with open(valid_images) as fp:
@@ -103,7 +115,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     valid_dataset = dataset.listDataset(valid_images, shape=(test_width, test_height),
                        shuffle=False,
                        transform=transforms.Compose([
-                           transforms.ToTensor(),]), bg_file_names=bg_file_names)
+                           transforms.ToTensor(),]))
     valid_batchsize = 1
 
     # Specify the number of workers for multiple processing, get the dataloader for the test dataset
@@ -165,10 +177,10 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                 # Denormalize the corner predictions 
                 corners2D_gt = np.array(np.reshape(box_gt[:18], [9, 2]), dtype='float32')
                 corners2D_pr = np.array(np.reshape(box_pr[:18], [9, 2]), dtype='float32')
-                corners2D_gt[:, 0] = corners2D_gt[:, 0] * 640
-                corners2D_gt[:, 1] = corners2D_gt[:, 1] * 480               
-                corners2D_pr[:, 0] = corners2D_pr[:, 0] * 640
-                corners2D_pr[:, 1] = corners2D_pr[:, 1] * 480
+                corners2D_gt[:, 0] = corners2D_gt[:, 0] * width
+                corners2D_gt[:, 1] = corners2D_gt[:, 1] * height               
+                corners2D_pr[:, 0] = corners2D_pr[:, 0] * width
+                corners2D_pr[:, 1] = corners2D_pr[:, 1] * height
                 preds_corners2D.append(corners2D_pr)
                 gts_corners2D.append(corners2D_gt)
 
@@ -250,6 +262,11 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     mean_err_2d = np.mean(errs_2d)
     mean_corner_err_2d = np.mean(errs_corner2D)
     nts = float(testing_samples)
+
+    np.savetxt("threshold.txt", np.array(errs_3d)/diam, delimiter=",")
+
+    #f= open(backupdir + '/test' + "threshold.txt","w+")
+    #f.write(np.array(errs_3d)/diam)
 
     if testtime:
         print('-----------------------------------')

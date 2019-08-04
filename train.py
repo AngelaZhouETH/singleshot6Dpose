@@ -60,7 +60,8 @@ def train(epoch):
                                                             	   train=True, 
                                                             	   seen=model.seen,
                                                             	   batch_size=batch_size,
-                                                            	   num_workers=num_workers, bg_file_names=bg_file_names),
+                                                            	   num_workers=num_workers),
+                                                                   #bg_file_names=bg_file_names),
                                                 batch_size=batch_size, shuffle=False, **kwargs)
 
     # TRAINING
@@ -281,6 +282,12 @@ def test(epoch, niter):
 
 if __name__ == "__main__":
 
+    ORI = 0
+    SUNCG = 1
+    SCANNET = 2
+
+    Data_type = SCANNET
+
     # Training settings
     datacfg       = sys.argv[1]
     cfgfile       = sys.argv[2]
@@ -308,7 +315,7 @@ if __name__ == "__main__":
     decay         = float(net_options['decay'])
     steps         = [float(step) for step in net_options['steps'].split(',')]
     scales        = [float(scale) for scale in net_options['scales'].split(',')]
-    bg_file_names = get_all_files('VOCdevkit/VOC2012/JPEGImages')
+    #bg_file_names = get_all_files('VOCdevkit/VOC2012/JPEGImages')
 
     # Train parameters
     max_epochs    = 700 # max_batches*batch_size/nsamples+1
@@ -323,8 +330,11 @@ if __name__ == "__main__":
     conf_thresh   = 0.1
     nms_thresh    = 0.4
     iou_thresh    = 0.5
-    im_width      = 640
-    im_height     = 480 
+    im_width = 640
+    im_height = 480
+    if Data_type == SCANNET:
+        im_width = 1296
+        im_height = 968
 
     # Specify which gpus to use
     torch.manual_seed(seed)
@@ -364,7 +374,7 @@ if __name__ == "__main__":
     mesh                 = MeshPly(meshname)
     vertices             = np.c_[np.array(mesh.vertices), np.ones((len(mesh.vertices), 1))].transpose()
     corners3D            = get_3D_corners(vertices)
-    internal_calibration = get_camera_intrinsic()
+    internal_calibration = get_camera_intrinsic(Data_type)
     diam          = calc_pts_diameter(np.array(mesh.vertices))
     vx_threshold  = diam * 0.1
 

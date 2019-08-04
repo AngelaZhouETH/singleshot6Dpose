@@ -120,7 +120,24 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             y7 = min(0.999, max(0, y7 * sy - dy))
             x8 = min(0.999, max(0, x8 * sx - dx))
             y8 = min(0.999, max(0, y8 * sy - dy))
-            
+            '''x0 = x0 * sx - dx
+            y0 = y0 * sy - dy 
+            x1 = x1 * sx - dx 
+            y1 = y1 * sy - dy 
+            x2 = x2 * sx - dx
+            y2 = y2 * sy - dy
+            x3 = x3 * sx - dx
+            y3 = y3 * sy - dy
+            x4 = x4 * sx - dx
+            y4 = y4 * sy - dy
+            x5 = x5 * sx - dx
+            y5 = y5 * sy - dy
+            x6 = x6 * sx - dx
+            y6 = y6 * sy - dy
+            x7 = x7 * sx - dx
+            y7 = y7 * sy - dy
+            x8 = x8 * sx - dx
+            y8 = y8 * sy - dy'''
             bs[i][1] = x0
             bs[i][2] = y0
             bs[i][3] = x1
@@ -171,15 +188,15 @@ def change_background(img, mask, bg, imgpath):
     return out
 
 def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure, bgpath):
-    labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
-    maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg', '.png')
+    labpath = imgpath.replace('images', 'labels_couch').replace('JPEGImages', 'labels_couch').replace('.jpg', '.txt').replace('.png','.txt')
+    #maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg', '.png')
 
     ## data augmentation
     img = Image.open(imgpath).convert('RGB')
-    mask = Image.open(maskpath).convert('RGB')
-    bg = Image.open(bgpath).convert('RGB')
+    #mask = Image.open(maskpath).convert('RGB')
+    #bg = Image.open(bgpath).convert('RGB')
     
-    img = change_background(img, mask, bg, imgpath)
+    #img = change_background(img, mask, bg, imgpath)
     img,flip,dx,dy,sx,sy = data_augmentation(img, shape, jitter, hue, saturation, exposure)
     ow, oh = img.size
     label = fill_truth_detection(labpath, ow, oh, flip, dx, dy, 1./sx, 1./sy)

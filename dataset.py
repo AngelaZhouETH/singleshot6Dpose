@@ -94,11 +94,11 @@ class listDataset(Dataset):
             exposure = 1.5
 
             # Get background image path
-            random_bg_index = random.randint(0, len(self.bg_file_names) - 1)
-            bgpath = self.bg_file_names[random_bg_index]    
+            #random_bg_index = random.randint(0, len(self.bg_file_names) - 1)
+            #bgpath = self.bg_file_names[random_bg_index]    
 
             # Get the data augmented image and their corresponding labels
-            img, label = load_data_detection(imgpath, self.shape, jitter, hue, saturation, exposure, bgpath)
+            img, label = load_data_detection(imgpath, self.shape, jitter, hue, saturation, exposure, "")
 
             # Convert the labels to PyTorch variables
             label = torch.from_numpy(label)
@@ -110,7 +110,7 @@ class listDataset(Dataset):
                 img = img.resize(self.shape)
     
             # Read the validation labels, allow upto 50 ground-truth objects in an image
-            labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
+            labpath = imgpath.replace('images', 'labels_couch').replace('JPEGImages', 'labels_couch').replace('.jpg', '.txt').replace('.png','.txt')
             label = torch.zeros(50*21)
             if os.path.getsize(labpath):
                 ow, oh = img.size
