@@ -9,6 +9,7 @@ from utils import *
 
 width = 1296.0
 height = 968.0
+# scans_dir = "../Dataset/scannet/scans/"
 scans_dir = "/nfs/nas12.ethz.ch/fs1201/infk_ivc_students/cvg-students/zhoum/scannet/scans/"
 for scene_id in os.listdir(scans_dir):
 	if "scene" not in scene_id:
@@ -22,6 +23,8 @@ for scene_id in os.listdir(scans_dir):
 		continue
 	inst_dir = scene_dir + "instance/"
 	if not os.path.exists(inst_dir):
+		continue
+	if any(x.startswith('labels') for x in os.listdir(scene_dir)):
 		continue
 	segs_file = scene_dir + scene_id + "_vh_clean_2.0.010000.segs.json"
 	aggr_file = scene_dir + scene_id + "_vh_clean.aggregation.json"
@@ -148,6 +151,8 @@ for scene_id in os.listdir(scans_dir):
 			proj_2d_vertices = compute_projection(vertices, Rt_gt, internal_calibration)[0:2, :].astype(int)
 			proj_2d_vertices = proj_2d_vertices[:, proj_2d_vertices[0] < im.shape[1]]
 			proj_2d_vertices = proj_2d_vertices[:, proj_2d_vertices[1] < im.shape[0]]
+			proj_2d_vertices = proj_2d_vertices[:, proj_2d_vertices[0] > 0]
+			proj_2d_vertices = proj_2d_vertices[:, proj_2d_vertices[1] > 0]
 
 
 			inst_labels = im[proj_2d_vertices[1,:], proj_2d_vertices[0,:]]
