@@ -104,7 +104,7 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             y8 = bs[i][18]
             x0 = min(0.999, max(0, x0 * sx - dx)) 
             y0 = min(0.999, max(0, y0 * sy - dy)) 
-            x1 = min(0.999, max(0, x1 * sx - dx)) 
+            '''x1 = min(0.999, max(0, x1 * sx - dx)) 
             y1 = min(0.999, max(0, y1 * sy - dy)) 
             x2 = min(0.999, max(0, x2 * sx - dx))
             y2 = min(0.999, max(0, y2 * sy - dy))
@@ -120,10 +120,10 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             y7 = min(0.999, max(0, y7 * sy - dy))
             x8 = min(0.999, max(0, x8 * sx - dx))
             y8 = min(0.999, max(0, y8 * sy - dy))
-            '''x0 = x0 * sx - dx
-            y0 = y0 * sy - dy 
-            x1 = x1 * sx - dx 
-            y1 = y1 * sy - dy 
+            x0 = x0 * sx - dx
+            y0 = y0 * sy - dy'''
+            x1 = x1 * sx - dx
+            y1 = y1 * sy - dy
             x2 = x2 * sx - dx
             y2 = y2 * sy - dy
             x3 = x3 * sx - dx
@@ -137,7 +137,7 @@ def fill_truth_detection(labpath, w, h, flip, dx, dy, sx, sy):
             x7 = x7 * sx - dx
             y7 = y7 * sy - dy
             x8 = x8 * sx - dx
-            y8 = y8 * sy - dy'''
+            y8 = y8 * sy - dy
             bs[i][1] = x0
             bs[i][2] = y0
             bs[i][3] = x1
@@ -188,7 +188,7 @@ def change_background(img, mask, bg, imgpath):
     return out
 
 def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure, bgpath):
-    labpath = imgpath.replace('images', 'labels_couch').replace('JPEGImages', 'labels_couch').replace('.jpg', '.txt').replace('.png','.txt')
+    labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
     #maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg', '.png')
 
     ## data augmentation
