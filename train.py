@@ -226,8 +226,8 @@ def test(epoch, niter):
                 # Compute pixel error
                 Rt_gt        = np.concatenate((R_gt, t_gt), axis=1)
                 Rt_pr        = np.concatenate((R_pr, t_pr), axis=1)
-                proj_2d_gt   = compute_projection(vertices, Rt_gt, internal_calibration) 
-                proj_2d_pred = compute_projection(vertices, Rt_pr, internal_calibration) 
+                proj_2d_gt   = compute_projection(vertices, Rt_gt, internal_calibration)[0:2] 
+                proj_2d_pred = compute_projection(vertices, Rt_pr, internal_calibration)[0:2]
                 norm         = np.linalg.norm(proj_2d_gt - proj_2d_pred, axis=0)
                 pixel_dist   = np.mean(norm)
                 errs_2d.append(pixel_dist)
