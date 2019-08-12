@@ -6,6 +6,8 @@ from torchvision import datasets, transforms
 import scipy.io
 import warnings
 warnings.filterwarnings("ignore")
+import matplotlib.pyplot as plt
+import scipy.misc
 
 from darknet import Darknet
 import dataset
@@ -52,13 +54,13 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     test_width   = 544
     test_height  = 544
     torch.manual_seed(seed)
-    use_cuda = True
+    use_cuda = False
     if use_cuda:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpus
         torch.cuda.manual_seed(seed)
-    save            = False
+    save            = True
+    visualize       = True
     testtime        = True
-    use_cuda        = True
     num_classes     = 1
     testing_samples = 0.0
     eps             = 1e-5
@@ -68,10 +70,13 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     match_thresh    = 0.5
     acc_idx_err = 0
     acc_idx_total = 0
+    edges_corners = [[0, 1], [0, 2], [0, 4], [1, 3], [1, 5], [2, 3], [2, 6], [3, 7], [4, 5], [4, 6], [5, 7], [6, 7]]
+
     if save:
         makedirs(backupdir + '/test')
         makedirs(backupdir + '/test/gt')
         makedirs(backupdir + '/test/pr')
+        makedirs(backupdir + '/test/imgs')
 
     # To save
     testing_error_trans = 0.0
@@ -108,7 +113,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     model = Darknet(cfgfile)
     model.print_network()
     model.load_weights(weightfile)
-    model.cuda()
+    # model.cuda()
     model.eval()
 
     # Get the parser for the test dataset
@@ -129,6 +134,10 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     count = 0
     
     for batch_idx, (data, target) in enumerate(test_loader):
+        # Images
+        img = data[0, :, :, :]
+        img = img.numpy().squeeze()
+        img = np.transpose(img, (1, 2, 0))
         
         t1 = time.time()
         # Pass data to GPU
@@ -145,7 +154,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
         t3 = time.time()
         
         # Using confidence threshold, eliminate low-confidence predictions
-        all_boxes = get_region_boxes(output, conf_thresh, num_classes)        
+        all_boxes = get_region_boxes(output, conf_thresh, num_classes, use_cuda=use_cuda)        
         t4 = time.time()
 
         # Iterate through all images in the batch
@@ -206,18 +215,18 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                 R_gt, t_gt = pnp(np.array(np.transpose(np.concatenate((np.mean(corners3D, axis=1)[:3].reshape(3,1), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_gt, np.array(internal_calibration, dtype='float32'))
                 R_pr, t_pr = pnp(np.array(np.transpose(np.concatenate((np.mean(corners3D, axis=1)[:3].reshape(3,1), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_pr, np.array(internal_calibration, dtype='float32'))
 
-                if save:
-                    preds_trans.append(t_pr)
-                    gts_trans.append(t_gt)
-                    preds_rot.append(R_pr)
-                    gts_rot.append(R_gt)
+                # if save:
+                #     preds_trans.append(t_pr)
+                #     gts_trans.append(t_gt)
+                #     preds_rot.append(R_pr)
+                #     gts_rot.append(R_gt)
 
-                    np.savetxt(backupdir + '/test/gt/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/gt/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_pr, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_pr, dtype='float32'))
-                    np.savetxt(backupdir + '/test/gt/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_pr, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/gt/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_gt, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/gt/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_gt, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/pr/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_pr, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/pr/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_pr, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/gt/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_gt, dtype='float32'))
+                #     np.savetxt(backupdir + '/test/pr/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_pr, dtype='float32'))
                 
                 # Compute translation error
                 trans_dist   = np.sqrt(np.sum(np.square(t_gt - t_pr)))
@@ -235,6 +244,32 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                 norm         = np.linalg.norm(proj_2d_gt - proj_2d_pred, axis=0)
                 pixel_dist   = np.mean(norm)
                 errs_2d.append(pixel_dist)
+
+                if visualize:
+                    # Visualize
+                    plt.xlim((0, width))
+                    plt.ylim((0, height))
+                    plt.imshow(scipy.misc.imresize(img, (height, width)))
+                    # Projections
+                    for edge in edges_corners:
+#                         plt.plot(proj_corners_gt[edge, 0], proj_corners_gt[edge, 1], color='b', linewidth=2.0)
+#                         plt.plot(proj_corners_pr[edge, 0], proj_corners_pr[edge, 1], color='g', linewidth=2.0)
+                        plt.plot(corners2D_gt[1:][edge, 0], corners2D_gt[1:][edge, 1], color='r', linewidth=2.0)
+                        plt.plot(corners2D_pr[1:][edge, 0], corners2D_pr[1:][edge, 1], color='y', linewidth=2.0)
+#                     plt.plot(corners2D_gt[[0, 1], 0], corners2D_gt[[0, 1], 1], color='r', linewidth=1.0)
+#                     plt.plot(corners2D_pr[[0, 1], 0], corners2D_pr[[0, 1], 1], color='y', linewidth=1.0)
+
+                    for i in range(0,8):
+#                         plt.text(proj_corners_gt[i,0], proj_corners_gt[i,1], i, color='b')
+#                         plt.text(proj_corners_pr[i,0], proj_corners_pr[i,1], i, color='g')
+                        plt.text(corners2D_gt[i+1,0], corners2D_gt[i+1,1], i, color='r')
+                        plt.text(corners2D_pr[i+1,0], corners2D_pr[i+1,1], i, color='y')
+
+                    plt.gca().invert_yaxis()
+                    if save:
+                        plt.savefig(backupdir + '/test/imgs/' + valid_files[count].split("/")[-3]+'_'+valid_files[count].split("/")[-1])
+                    # plt.show()
+                    plt.clf()
 
                 # Compute 3D distances
                 transform_3d_gt   = compute_transformation(vertices, Rt_gt) 

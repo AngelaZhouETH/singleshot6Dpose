@@ -335,7 +335,7 @@ def convert2cpu(gpu_matrix):
 def convert2cpu_long(gpu_matrix):
     return torch.LongTensor(gpu_matrix.size()).copy_(gpu_matrix)
 
-def get_region_boxes(output, conf_thresh, num_classes, only_objectness=1, validation=False):
+def get_region_boxes(output, conf_thresh, num_classes, only_objectness=1, validation=False, use_cuda=True):
     
     # Parameters
     anchor_dim = 1 
@@ -351,8 +351,12 @@ def get_region_boxes(output, conf_thresh, num_classes, only_objectness=1, valida
     all_boxes = []
     max_conf = -100000
     output    = output.view(batch*anchor_dim, 19+num_classes, h*w).transpose(0,1).contiguous().view(19+num_classes, batch*anchor_dim*h*w)
-    grid_x    = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w).cuda()
-    grid_y    = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w).cuda()
+    if use_cuda:
+        grid_x    = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w).cuda()
+        grid_y    = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w).cuda()
+    else:
+        grid_x    = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w)
+        grid_y    = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*anchor_dim, 1, 1).view(batch*anchor_dim*h*w)
     xs0       = torch.sigmoid(output[0]) + grid_x
     ys0       = torch.sigmoid(output[1]) + grid_y
     xs1       = output[2] + grid_x
