@@ -102,18 +102,18 @@ def pnp(points_3D, points_2D, cameraMatrix):
 
     assert points_2D.shape[0] == points_2D.shape[0], 'points 3D and points 2D must have same number of vertices'
 
-    _, R_exp, t = cv2.solvePnP(points_3D,
-                              # points_2D,
-                              np.ascontiguousarray(points_2D[:,:2]).reshape((-1,1,2)),
-                              cameraMatrix,
-                              distCoeffs)
+   # _, R_exp, t = cv2.solvePnP(points_3D,
+   #                           # points_2D,
+   #                           np.ascontiguousarray(points_2D[:,:2]).reshape((-1,1,2)),
+   #                           cameraMatrix,
+   #                           distCoeffs)
                               # , None, None, False, cv2.SOLVEPNP_UPNP)
                                 
-   # _, R_exp, t, _ = cv2.solvePnPRansac(points_3D,
-   #                            points_2D,
-   #                            cameraMatrix,
-   #                            distCoeffs,
-   #                            reprojectionError=12.0)
+    _, R_exp, t, _ = cv2.solvePnPRansac(points_3D,
+                               points_2D,
+                               cameraMatrix,
+                               distCoeffs,
+                               reprojectionError=12.0)
     
 
     R, _ = cv2.Rodrigues(R_exp)

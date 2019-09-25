@@ -54,12 +54,12 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     test_width   = 544
     test_height  = 544
     torch.manual_seed(seed)
-    use_cuda = False
+    use_cuda = True
     if use_cuda:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpus
         torch.cuda.manual_seed(seed)
-    save            = True
-    visualize       = True
+    save            = False
+    visualize       = False
     testtime        = True
     num_classes     = 1
     testing_samples = 0.0
@@ -113,7 +113,8 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     model = Darknet(cfgfile)
     model.print_network()
     model.load_weights(weightfile)
-    # model.cuda()
+    if use_cuda:
+        model.cuda()
     model.eval()
 
     # Get the parser for the test dataset

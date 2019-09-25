@@ -171,7 +171,7 @@ def test(epoch, niter):
         output = model(data).data  
         t3 = time.time()
         # Using confidence threshold, eliminate low-confidence predictions
-        all_boxes = get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors)        
+        all_boxes = get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, use_cuda)        
         t4 = time.time()
         # Iterate through all batch elements
         for i in range(output.size(0)):
@@ -278,7 +278,8 @@ def test(epoch, niter):
     testing_errors_trans.append(testing_error_trans/(nts+eps))
     testing_errors_angle.append(testing_error_angle/(nts+eps))
     testing_errors_pixel.append(testing_error_pixel/(nts+eps))
-    testing_accuracies.append(acc)
+    #testing_accuracies.append(acc)
+    testing_accuracies.append(mean_err_2d)
 
 if __name__ == "__main__":
 
@@ -424,7 +425,7 @@ if __name__ == "__main__":
                     testing_accuracies=testing_accuracies,
                     testing_errors_pixel=testing_errors_pixel,
                     testing_errors_angle=testing_errors_angle) 
-                if (testing_accuracies[-1] > best_acc ):
+                if (testing_accuracies[-1] < best_acc or best_acc == -1):
                     best_acc = testing_accuracies[-1]
                     logging('best model so far!')
                     logging('save weights to %s/model.weights' % (backupdir))
