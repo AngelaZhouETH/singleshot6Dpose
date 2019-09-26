@@ -1,3 +1,73 @@
+This is a fork repository of the following original git repository.
+We added codes for generating and processing different datasets including SunCG and ScanNet. We also specify some settings on ETH cluster.
+
+### Cluster settings
+On cluster, we can load modules in the following way:
+	
+	module load python_gpu/2.7.14
+	module load python_gpu/3.6.4
+	module load python_cpu/3.7.1
+	module load python_cpu/2.7.14
+
+We can also mount remote folder on our local disk e.g.
+
+	sudo sshfs -o allow_other,defer_permissions zhoum@login.leonhard.ethz.ch:/ /mnt/thesis
+
+And unmount with
+
+	sudo umount /mnt/thesis
+	or
+	diskutil umount force /mnt/thesis
+
+Sometimes we also need to install some python packages. On cluster we can install locally e.g.
+	
+	pip install --user -r requirements.txt
+	or
+	pip install --user opencv-python==3.4.1.15
+
+When we train the network we can require GPU resorces and specify running time with e.g.
+
+	bsub -W 24:00 -n 2 -R "rusage[mem=9000, ngpus_excl_p=1]" python train.py ...
+	
+Optional we can select GPU resources with large memories by adding `-R "select[gpu_mtotal0>=10*1024]"` to the command.
+
+Finally, there are space or number of files limit on Cluster. To check the total quota and quota left, `lquota` command can be used. CVG is also providing some shared folder at `/nfs/nas12.ethz.ch/fs1201/infk_ivc_students/cvg-students` which has larger space and small files supports compared to home directory.
+
+### ScanNet Data generation
+
+In scannet/ folder, we provide codes to download scannet dataset and read the .sens file to generate required data. Note that by default this script will download the newest (v2) release of the ScanNet data; older versions can still be downloaded by specifying the version (e.g., --v1).
+
+Some useful info:  
+Scan data is named by scene[spaceid]\_[scanid], or scene%04d\_%02d, where each space corresponds to a unique location (0-indexed).  
+Script usage:  
+- To download the entire ScanNet release (1.3TB): 
+```download-scannet.py -o [directory in which to download]```
+- To download a specific scan (e.g., scene0000\_00): ```download-scannet.py -o [directory in which to download] --id scene0000_00```
+- To download a specific file type (e.g., *.sens, valid file suffixes listed here):
+```download-scannet.py -o [directory in which to download] --type .sens```
+- To download the ScanNet v1 task data (inc. trained models):
+```download-scannet.py -o [directory in which to download] --task_data```
+-  Train/test splits are given in the main ScanNet project repository: https://github.com/ScanNet/ScanNet/tree/master/Tasks/Benchmark
+
+License: ScanNet data is released under the Terms of Use; code is released under the MIT license. 
+
+Specificaly, we can use the following codes to download only those file types we need (use python2):
+
+	python download-scannet.py -o scannet/ --type .sens
+	python download-scannet.py -o scannet/ --type _vh_clean_2.labels.ply
+	python download-scannet.py -o scannet/ --type _vh_clean.aggregation.json
+	python download-scannet.py -o scannet/ --type _vh_clean_2.0.010000.segs.json
+	python download-scannet.py -o scannet/ --type _2d-instance.zip
+	unzip *_2d-instance.zip
+
+And then we can run the bash code `run_reader.sh` to render color images, camera poses for each image, and camera intrinsic parameters from .sens file.
+
+### ScanNet label generation
+
+use python3
+
+	python 
+
 # SINGLESHOTPOSE
  
 This is the code for the following paper:
