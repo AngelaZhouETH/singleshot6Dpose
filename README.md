@@ -58,15 +58,30 @@ Specificaly, we can use the following codes to download only those file types we
 	python download-scannet.py -o scannet/ --type _vh_clean.aggregation.json
 	python download-scannet.py -o scannet/ --type _vh_clean_2.0.010000.segs.json
 	python download-scannet.py -o scannet/ --type _2d-instance.zip
-	unzip *_2d-instance.zip
 
-And then we can run the bash code `run_reader.sh` to render color images, camera poses for each image, and camera intrinsic parameters from .sens file.
+Then unzip all the *_2d-instance.zip files with `run_unzip.sh` script. After this we can run the bash code `run_reader.sh` to render color images, camera poses for each image, and camera intrinsic parameters from .sens file. Sometimes on cluster there is limit on number of files such as /cluster/scratch. Then you need to use `run_zip.sh` to zip the folders after retrieving images for some scenes.
 
 ### ScanNet label generation
 
-use python3
+To generate 3D meshes and labels for all the objects in each scan, we can run `gen_label_scannet.py` or `gen_label_unzip.py` if the scan folders are zipped e.g. in cluster/scratch (use python3):
 
-	python 
+	python gen_label_scannet.py
+	or
+	python gen_label_unzip.py
+	
+To generate training and testing data files for a particular category we can run:
+
+	python gen_list_scannet.py
+
+Specify the category by modifying `target_name` variable. Or if the scan folders are zipped e.g. in cluster/scratch, run:
+
+	python gen_list_unzip.py
+	
+And this will also copy the required images and labels in the category to a new folder without zip anymore so that the training and testing period can derectly access them.
+
+### SunCG Data generation
+### SunCG label generation
+
 
 # SINGLESHOTPOSE
  
