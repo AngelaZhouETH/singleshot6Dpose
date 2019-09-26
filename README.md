@@ -80,8 +80,21 @@ Specify the category by modifying `target_name` variable. Or if the scan folders
 And this will also copy the required images and labels in the category to a new folder without zip anymore so that the training and testing period can derectly access them.
 
 ### SunCG Data generation
-### SunCG label generation
+Run `download_suncg.py` to download raw data of SunCG dataset.
 
+	python download_suncg.py
+
+Use SUNCGtoolbox to generate camera pose files, and render color images.
+
+	SUNCGtoolbox/gaps/bin/x86_64/scn2scn house.json house.obj
+	SUNCGtoolbox/gaps/bin/x86_64/scn2cam house.json outputcamerasfile -categories ../../../SUNCGtoolbox/metadata/ModelCategoryMapping.csv  -v
+	SUNCGtoolbox/gaps/bin/x86_64/scn2img house.json outputcamerasfile imgs/ -categories ../../../SUNCGtoolbox/metadata/ModelCategoryMapping.csv  -v -capture_color_images
+
+### SunCG label generation
+Run the following scripts to generate label for a particular object category. Modify `modelId` variable in `gen_label_suncg.py.py` file to specify the object category. `gen_list_suncg.py` will create training and testing lists for the images containing single object in our specified category.
+
+	python gen_label_suncg.py
+	python gen_list_suncg.py
 
 # SINGLESHOTPOSE
  
